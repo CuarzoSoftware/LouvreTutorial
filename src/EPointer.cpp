@@ -1,6 +1,8 @@
 #include <LScene.h>
 #include <LCursor.h>
 #include <LView.h>
+#include <LCursorRole.h>
+#include <LSurface.h>
 #include "EPointer.h"
 #include "Global.h"
 
@@ -25,4 +27,19 @@ void EPointer::pointerButtonEvent(Button button, ButtonState state)
 void EPointer::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source)
 {
     G::scene()->handlePointerAxisEvent(-axisX, -axisY, -discreteX, -discreteY, source);
+}
+
+void EPointer::setCursorRequest(LCursorRole *cursorRole)
+{
+    if (cursorRole)
+    {
+        cursor()->setTextureB(
+            cursorRole->surface()->texture(),
+            cursorRole->hotspotB());
+
+        cursor()->setVisible(true);
+    }
+    // If nullptr is provided, it indicates that the client intends to hide the cursor.
+    else
+        cursor()->setVisible(false);
 }

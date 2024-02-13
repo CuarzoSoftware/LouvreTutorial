@@ -16,7 +16,6 @@ class EToplevel : public LToplevelRole
 public:
     EToplevel(const void *params);
 
-    // Cast LSurface to ESurface
     inline ESurface *surf() const
     {
         return (ESurface*) surface();

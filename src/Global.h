@@ -33,7 +33,6 @@ public:
     }
 
     static LScene *scene();
-
     static void reparentSurfaceAndChildrenViews(ESurface *surface, LView *newParent, bool subsurfaceRoleOnly = false);
 };
 

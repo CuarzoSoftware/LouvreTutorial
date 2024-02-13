@@ -79,7 +79,7 @@ void ESurface::minimizedChanged()
          * it later even if the outputs arrangement changes or the given output is no longer available */
         if ( (outputBeforeMinimize = primaryOutput()) )
         {
-            const LPointF localPos { rolePos() - outputBeforeMinimize->pos() };
+            const LPointF localPos { pos() - outputBeforeMinimize->pos() };
             relativePosBeforeMinimize = localPos / LSizeF(outputBeforeMinimize->size());
         }
 
@@ -155,7 +155,7 @@ void ESurface::mappingChanged()
             const LSize availableSize { output->size() - LSize(0, TOPBAR_HEIGHT) };
 
             // Center the toplevel
-            setPos( (output->pos() + LPoint(0, TOPBAR_HEIGHT)) + (availableSize - tl()->windowGeometry().size()) / 2);
+            setPos( (output->pos() + LPoint(0, TOPBAR_HEIGHT)) + (availableSize - tl()->size()) / 2);
 
             // Prevent positioning it under the topbar (when the toplevel height is greater than dstSize.h())
             if (pos().y() < output->pos().y() + TOPBAR_HEIGHT)
@@ -176,8 +176,8 @@ void ESurface::parentChanged()
 {
     if (parent())
     {
-        const ESurface *p = { (ESurface*)parent() };
-        view.setParent(p->view.parent());
+        const ESurface *parentSurface = { (ESurface*)parent() };
+        view.setParent(parentSurface->view.parent());
     }
     else
         view.setParent(&G::compositor()->surfacesLayer);

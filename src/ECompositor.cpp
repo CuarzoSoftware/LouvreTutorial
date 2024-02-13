@@ -1,12 +1,18 @@
 #include <LSeat.h>
 #include <LKeyboard.h>
+#include <LAnimation.h>
+#include <LCursor.h>
+#include <LXCursor.h>
 #include "ECompositor.h"
 #include "EOutput.h"
 #include "ESurface.h"
 #include "EPointer.h"
 #include "EKeyboard.h"
 #include "EToplevel.h"
- 
+#include "EPopup.h"
+#include "ESeat.h"
+#include "EDNDManager.h"
+
 ECompositor::ECompositor()
 {
     // Set black as the scene clear color
@@ -40,27 +46,70 @@ void ECompositor::initialized()
     }
 }
 
-LOutput *ECompositor::createOutputRequest(const void *params)
+void ECompositor::cursorInitialized()
 {
-    return new EOutput(params);
+    defaultCursor = LXCursor::loadXCursorB("arrow");
+
+    if (defaultCursor)
+        cursor()->replaceDefaultB(defaultCursor->texture(), defaultCursor->hotspotB());
 }
 
-LSurface *ECompositor::createSurfaceRequest(const void *params)
+void ECompositor::uninitialized()
 {
-    return new ESurface(params);
+    if (defaultCursor)
+    {
+        delete defaultCursor;
+        defaultCursor = nullptr;
+    }
 }
 
-LPointer *ECompositor::createPointerRequest(const void *params)
+LOutput         *ECompositor::createOutputRequest       (const void *params) { return new EOutput(params);     }
+LSurface        *ECompositor::createSurfaceRequest      (const void *params) { return new ESurface(params);    }
+LPointer        *ECompositor::createPointerRequest      (const void *params) { return new EPointer(params);    }
+LKeyboard       *ECompositor::createKeyboardRequest     (const void *params) { return new EKeyboard(params);   }
+LToplevelRole   *ECompositor::createToplevelRoleRequest (const void *params) { return new EToplevel(params);   }
+LPopupRole      *ECompositor::createPopupRoleRequest    (const void *params) { return new EPopup(params);      }
+LSeat           *ECompositor::createSeatRequest         (const void *params) { return new ESeat(params);       }
+LDNDManager     *ECompositor::createDNDManagerRequest   (const void *params) { return new EDNDManager(params); }
+
+void ECompositor::destroyToplevelRoleRequest(LToplevelRole *toplevel)
 {
-    return new EPointer(params);
+    fadeOutSurface((ESurface*)toplevel->surface(), 400);
 }
 
-LKeyboard *ECompositor::createKeyboardRequest(const void *params)
+void ECompositor::destroyPopupRoleRequest(LPopupRole *popup)
 {
-    return new EKeyboard(params);
+    fadeOutSurface((ESurface*)popup->surface(), 50);
 }
 
-LToplevelRole *ECompositor::createToplevelRoleRequest(const void *params)
+void ECompositor::fadeOutSurface(ESurface *surface, UInt32 ms)
 {
-    return new EToplevel(params);
+    if (!surface)
+        return;
+
+    LTexture *capture = surface->capture(surface->size() * 2);
+    LTextureView *fadeOutView = new LTextureView(capture, &cursorLayer);
+    fadeOutView->setBufferScale(2);
+    fadeOutView->enableParentOffset(false);
+    fadeOutView->setPos(surface->rolePos());
+
+    // Stack it below the software cursor view
+    fadeOutView->insertAfter(nullptr);
+
+    LAnimation::oneShot(ms,
+
+    // On Update
+    [this, fadeOutView](LAnimation *anim)
+    {
+        fadeOutView->setOpacity(1.f - anim->value());
+        repaintAllOutputs();
+    },
+
+    // On Finish
+    [this, fadeOutView](LAnimation *)
+    {
+        repaintAllOutputs();
+        delete fadeOutView->texture();
+        delete fadeOutView;
+    });
 }

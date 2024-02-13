@@ -9,6 +9,8 @@
 
 using namespace Louvre;
 
+class EToplevel;
+
 class EOutput : public LOutput
 {
 public:
@@ -20,6 +22,9 @@ public:
     void paintGL() override;
     void uninitializeGL() override;
 
+    void setGammaRequest(LClient *client, const LGammaTable *gamma) override;
+
+    EToplevel *findFullscreenToplevel() const;
     void updateToplevelsPos();
     void updateToplevelsSize();
     void rescueViewsFromVoid();

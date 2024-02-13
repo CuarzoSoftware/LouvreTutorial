@@ -6,7 +6,10 @@
 #include "EOutput.h"
 #include "Global.h"
 
-EToplevel::EToplevel(const void *params) : LToplevelRole(params) {}
+EToplevel::EToplevel(const void *params) : LToplevelRole(params)
+{
+    fullscreenBackground.setVisible(false);
+}
 
 void EToplevel::configureRequest()
 {
@@ -84,7 +87,6 @@ void EToplevel::statesChanged()
     }
     else if (fullscreen())
         G::reparentSurfaceAndChildrenViews(surf(), &fullscreenBackground);
-
 }
 
 bool EToplevel::updateGeometry(bool fallbackToNormalOnFail)
@@ -130,7 +132,7 @@ bool EToplevel::updateGeometry(bool fallbackToNormalOnFail)
 
 void EToplevel::setMaximized()
 {
-    bool inNormalState = { output == nullptr };
+    const bool inNormalState = { output == nullptr };
 
     if (inNormalState)
         saveNormalState();
@@ -139,7 +141,7 @@ void EToplevel::setMaximized()
     if (!output)
         return;
 
-    LSize targetSize { output->size() - LSize(0, TOPBAR_HEIGHT) };
+    const LSize targetSize { output->size() - LSize(0, TOPBAR_HEIGHT) };
 
     /* If the toplevel does not support the target size, we will configure it with that size regardless.
      * However, we will set only the activated flag, ensuring it expands solely in size, keeping its
@@ -174,7 +176,7 @@ void EToplevel::unsetMaximizedRequest()
 
 void EToplevel::setFullscreen()
 {
-    bool inNormalState = { output == nullptr };
+    const bool inNormalState = { output == nullptr };
 
     if (inNormalState)
         saveNormalState();
@@ -225,7 +227,7 @@ void EToplevel::saveNormalState()
 
     if (output)
     {
-        LPointF localPos { rolePos() - output->pos() };
+        const LPointF localPos { surf()->pos() - output->pos() };
         prevRelativePos = localPos / LSizeF(output->size());
     }
     else if (!G::outputs().empty())

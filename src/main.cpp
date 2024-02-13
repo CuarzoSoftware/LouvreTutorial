@@ -6,6 +6,8 @@ using namespace Louvre;
  
 int main()
 {
+    setenv("LOUVRE_DEBUG", "4", 0);
+
     LLauncher::startDaemon();
  
     ECompositor compositor;

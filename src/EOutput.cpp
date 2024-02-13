@@ -40,6 +40,14 @@ void EOutput::moveGL()
 
 void EOutput::resizeGL()
 {
+    Int32 totalWidth { 0 };
+
+    for (EOutput *o : G::outputs())
+    {
+        o->setPos(LPoint(totalWidth, 0));
+        totalWidth += o->size().w();
+    }
+
     updateToplevelsSize();
     updateWallpaper();
     topbar.updateGUI();
@@ -60,6 +68,9 @@ void EOutput::paintGL()
         G::compositor()->softwareCursor.setVisible(cursor()->visible());
     }
 
+    EToplevel *fullscreenToplevel { findFullscreenToplevel() };
+    enableFractionalOversampling( fullscreenToplevel == nullptr);
+    enableVSync(fullscreenToplevel == nullptr ? true : fullscreenToplevel->surf()->preferVSync());
     G::scene()->handlePaintGL(this);
 }
 
@@ -74,6 +85,24 @@ void EOutput::uninitializeGL()
         delete wallpaperView.texture();
 
     topbar.destroyThumbnails();
+}
+
+void EOutput::setGammaRequest(LClient *client, const LGammaTable *gamma)
+{
+    /* Note: This is quite unsafe, you should only permit well-known
+     * clients to set gamma correction curves. */
+    L_UNUSED(client)
+
+    setGamma(gamma);
+}
+
+EToplevel *EOutput::findFullscreenToplevel() const
+{
+    for (ESurface *surface : G::surfaces())
+        if (surface->tl() && surface->tl()->fullscreen() && surface->tl()->output == this)
+            return surface->tl();
+
+    return nullptr;
 }
 
 void EOutput::updateToplevelsPos()

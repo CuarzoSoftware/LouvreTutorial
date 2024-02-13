@@ -9,7 +9,7 @@ project(
     ]
 )
  
-louvre_dep = dependency('Louvre')
+louvre_dep = dependency('Louvre', version : '>=1.2.0')
  
 # List C/C++ source files stored in ./src
 sources = run_command('find', './src', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]', check : false).stdout().strip().split('\n')
